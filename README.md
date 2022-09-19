@@ -1,7 +1,7 @@
 # Rock-Scissor-Paper-move-recognition
 In this project, I use classification ML to detect Rock Scissor or Paper through the camera. The figure represents the workflow: 
 
-<img align="right" width="370" height="205" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
+<img align="right" width="600" height="600" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
 
 1) I collected images of people distinguishing Rock, Scissor and Paper. 
 2) I transformed the images in landmarsk (coordinates) with Mediapipe. 
