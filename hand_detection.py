@@ -228,7 +228,7 @@ def GetHandCoords(directory):
 
         return df
 
-
+'''
 def CenterCoordinates(df):
     x_list, y_list, z_list = [], [], []
 
@@ -254,7 +254,7 @@ def CenterCoordinates(df):
     df_new = pd.merge(df_new, others, left_index=True, right_index=True)
 
     return df_new
-
+'''
 
 
 ## function
@@ -277,7 +277,7 @@ def resize(image):
 #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 ## GETO CAMERA INPUT AND EXTRACT THE MOVE
-model = load("../data/model.pickle")
+model = load("../model.pickle")
 print(model)
 
 

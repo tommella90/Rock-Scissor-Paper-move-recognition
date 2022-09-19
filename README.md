@@ -1,6 +1,8 @@
 # Rock-Scissor-Paper-move-recognition
 In this project, I use classification ML to detect Rock Scissor or Paper through the camera. The figure represents the workflow: 
-[insert fig. ](https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/tree/main/img)
+
+<img align="right" width="370" height="205" src="https://github.com/tommella90/tommella90/blob/main/images/mylogo2.png">
+
 1) I collected images of people distinguishing Rock, Scissor and Paper. 
 2) I transformed the images in landmarsk (coordinates) with Mediapipe. 
 3) I applied ML algorightms on the new data to train a model able to recognize the hand-move
@@ -12,11 +14,10 @@ Finally, With Touchdesigner, you can play Rock Scissor Paper against the CPU (ra
 I use Mediapipe to extract hand landmarks. Mediapipe detects hands on the screen in real time and transforms them in [x, y, z] coordinates. 
 In order to train the algorithm, i used three categories of pictures, representing respectively people doing Rock, Scissor or Paper. 
 
-[This file](https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/hand_detection.py) contains (*hand_detection.py*) contains the script that transforms pictures into landmarsk. For obvious reasons, I deleted the pics from family and friends and ketp only pics of me (I don't mind) and the ones from the Kaggle database (insert link). The excel file with the data (already transformed in landmarks), is here [INSERT LINK]
+[This file](https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/hand_detection.py) contains (*hand_detection.py*) contains the script that transforms pictures into landmarsk. For obvious reasons, I deleted the pics from family and friends and ketp only pics of me (I don't mind) and the ones from the Kaggle database (insert link). The excel file with the data (already transformed in landmarks), [is here](https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/data/hands_coords.csv)
 
 # TRAIN THE MODEL 
-I used the landmarks to train a model able to recognize the hand-move on new data. The script is here: 
-[insert link]
+I used the landmarks to train a model able to recognize the hand-move on new data. The script is [here](https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/hand_modeling.py).
 Note that, despite the accuracy is always very high (~99%) it might not be accurate. This happens because the train dataset might be non-representative. I used a total of ~5000 pictures and the model worked pretty well. Among all the models used, Random Forest performs the best. 
 
 # APPLY THE MODEL IN TOUCHDESIGNER
