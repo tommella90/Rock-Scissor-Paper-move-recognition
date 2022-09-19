@@ -5,6 +5,7 @@ import random
 MOVE = op('gesture')
 SCORE = op('score')
 
+## random CPU move
 def cpu_result():
     gestures = ['ROCK', 'PAPER', 'SCISSOR']
     cpu_result = random.choice(gestures)

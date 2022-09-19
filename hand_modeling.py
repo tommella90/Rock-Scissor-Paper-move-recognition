@@ -41,10 +41,9 @@ def ColReplace(col):
 def CleanDataframe(df):
     df['move'] = df['move'].replace({"scissor": 0, "paper": 1, "rock": 2})
     df['hand'] = df['hand'].replace({"Right": 1, "Left": 0})
-    df = df[df['score']>0.95]
+    df = df[df['score'] > 0.95]
     return df
 
-#x = df[['dist1', 'dist2', 'dist3']]
 
 def SplitXY(df):
     y = df['move']
@@ -71,22 +70,28 @@ def evaluate_classification_model(y_train, y_pred_train, y_test, y_pred_test):
 
 
 #%% PREPARE DATAFRAME
-path = 'C:/Users/tomma/Documents/data_science/berlin/final_project/data/'
-df = pd.read_csv(path + 'hand_coords_level2.csv')
-fig_path = 'C:/Users/tomma/Documents/data_science/berlin/final_project/presentation/'
-ColReplace('move')
+df = pd.read_csv("data/hands_coords.csv")
+#fig_path = 'C:/Users/tomma/Documents/data_science/berlin/final_project/presentation/'
 
+# clean dataframe with previously defined functions
+ColReplace('move')
 LowerColumns(df)
 df = CleanDataframe(df)
 df = DropFeatures(df)
 df = df.dropna()
-y_tr, y_ts, x_tr, x_ts = SplitXY(df)
 
+
+## to train the model, I only use the distances between the finger landmarks, and drop the signle coordinates
+df2 = df.iloc[:, -10:len(df.columns)]
+
+## split test train
+y_tr, y_ts, x_tr, x_ts = SplitXY(df2)
 columns_names = x_tr.columns
 print(x_tr.columns, len(x_tr.columns))
 
 
-#%% 1) DECISION TREES
+##% NOW TRAIN THE MODELS
+##% 1) DECISION TREES
 tree = DecisionTreeClassifier(random_state=12345)
 tree.fit(x_tr, y_tr)
 
@@ -103,7 +108,7 @@ tree_importance = pd.DataFrame(tree.feature_importances_)
 tree_importance.index = columns_names
 tree_importance = tree_importance.sort_values(by=0, ascending=False)
 tree_importance = tree_importance.head(10)
-dfi.export(tree_importance, fig_path + "tree_feat.png")
+dfi.export(tree_importance, "img/tree_feat.png")
 print("DECISION TREE/n", tree_importance.head(10))
 
 
@@ -118,8 +123,8 @@ y_test_vs_predicted = evaluate_classification_model(y_tr, y_pred_train_tree,
 
 ## export table
 #error_metrics_tree = error_metrics_tree.style.background_gradient() #adding a gradient based on values in cell
-dfi.export(error_metrics_tree, fig_path + "tree_table.png")
-print('ok')
+dfi.export(error_metrics_tree, "img/tree_table.png")
+print('done')
 
 
 #%% 2) KNN CLASSIFIER
@@ -142,7 +147,7 @@ try:
     knn_importance.index = columns_names
     knn_importance = knn_importance.sort_values(by=0, ascending=False)
     knn_importance = knn_importance.head(10)
-    dfi.export(knn_importance, fig_path + "knn_feat.png")
+    dfi.export(knn_importance, "img/knn_feat.png")
     print("KNN CLASSIFIER/n", knn_importance.head(10))
 
 except:
@@ -160,7 +165,7 @@ y_test_vs_predicted = evaluate_classification_model(y_tr, y_pred_train_knn,
 
 ## export table
 #error_metrics_knn = error_metrics_knn.style.background_gradient() #adding a gradient based on values in cell
-dfi.export(error_metrics_knn, fig_path + "knn_table.png")
+dfi.export(error_metrics_knn, "img/knn_table.png")
 print('ok')
 
 
@@ -218,12 +223,12 @@ rfc_importance = pd.DataFrame(rfc.feature_importances_)
 rfc_importance.index = columns_names
 rfc_importance = rfc_importance.sort_values(by=0, ascending=False)
 rfc_importance = rfc_importance.head(10)
-dfi.export(rfc_importance, fig_path + "rfc_feat.png")
+dfi.export(rfc_importance, "img/rfc_feat.png")
 print("RANDOM FOREST/n", rfc_importance.head(10))
 
 ## export table
 #error_metrics_knn = error_metrics_rfc.style.background_gradient() #adding a gradient based on values in cell
-dfi.export(error_metrics_rfc, fig_path + "rfc_table.png")
+dfi.export(error_metrics_rfc, "img/rfc_table.png")
 print('ok')
 
 
@@ -249,13 +254,6 @@ y_pred_test_sgd = sgd.predict(x_ts)
 sgd_acc = classification_report(y_ts, y_pred_test_sgd)
 print(sgd_acc)
 
-## feature importance
-sgd_importance = pd.DataFrame(sgd.feature_importances_)
-sgd_importance.index = columns_names
-sgd_importance = sgd_importance.sort_values(by=0, ascending=False)
-sgd_importance = sgd_importance.head(10)
-dfi.export(sgd_importance, fig_path + "sgd_feat.png")
-print("DECISION sgd/n", sgd_importance.head(10))
 
 
 ## error metrics
@@ -266,7 +264,7 @@ y_test_vs_predicted = evaluate_classification_model(y_tr, y_pred_train_sgd,
 
 ## export table
 #error_metrics_sgd = error_metrics_sgd.style.background_gradient() #adding a gradient based on values in cell
-dfi.export(error_metrics_sgd, fig_path + "sgd_table.png")
+dfi.export(error_metrics_sgd, "img/sgd_table.png")
 print('ok')
 
 
@@ -294,7 +292,7 @@ y_test_vs_predicted = evaluate_classification_model(y_tr, y_pred_train_svc,
 
 ## export table
 #error_metrics_svc = error_metrics_svc.style.background_gradient() #adding a gradient based on values in cell
-dfi.export(error_metrics_svc, fig_path + "svc_table.png")
+dfi.export(error_metrics_svc, "img/svc_table.png")
 print('ok')
 
 
@@ -309,7 +307,7 @@ plot_confusion_matrix(tree, x_ts, y_ts,ax=ax[1],values_format = 'd', cmap=color_
 ax[1].title.set_text("Test Set")
 fig.suptitle('DECISION TREES')
 
-plt.savefig(fig_path + '/tree_CM.png')
+plt.savefig('img/tree_CM.png')
 
 
 #%% PLOTS
@@ -323,7 +321,7 @@ plot_confusion_matrix(knn, x_ts, y_ts,ax=ax[1],values_format = 'd', cmap=color_m
 ax[1].title.set_text("Test Set")
 fig.suptitle('KNN')
 
-plt.savefig(fig_path + '/knn_CM.png')
+plt.savefig('img/knn_CM.png')
 
 
 #%% RF PLOTS
@@ -338,7 +336,7 @@ plot_confusion_matrix(rfc, x_ts, y_ts,ax=ax[1], values_format = 'd', cmap=color_
 ax[1].title.set_text("Test Set")
 fig.suptitle('RANDOM FOREST')
 
-plt.savefig(fig_path + '/rfc_CM.png')
+plt.savefig('img/rfc_CM.png')
 
 
 #%%
@@ -352,7 +350,7 @@ plot_confusion_matrix(sgd, x_ts, y_ts,ax=ax[1],values_format = 'd', cmap=color_m
 ax[1].title.set_text("Test Set")
 fig.suptitle('SGD')
 
-plt.savefig(fig_path + '/sgd_CM.png')
+plt.savefig('img/sgd_CM.png')
 
 
 #%%
@@ -366,27 +364,28 @@ plot_confusion_matrix(svc, x_ts, y_ts,ax=ax[1],values_format = 'd', cmap=color_m
 ax[1].title.set_text("Test Set")
 fig.suptitle('svc')
 
-plt.savefig(fig_path + '/svc_CM.png')
+plt.savefig('img/svc_CM.png')
 
 
 #%%
 ### SAVE MODEL
 import pickle
-with open("../data/knn2.pickle", "wb") as f:
+with open("models/knn.pickle", "wb") as f:
     pickle.dump(knn,f)
 
-with open(r"../data/tree2.pickle", "wb") as f:
+with open(r"models/tree.pickle", "wb") as f:
     pickle.dump(tree,f)
 
-with open(r"../data/rfc.pickle", "wb") as f:
-    pickle.dump(rfc2,f)
+with open(r"models/rfc.pickle", "wb") as f:
+    pickle.dump(rfc,f)
 
-with open(r"../data/sgd.pickle", "wb") as f:
+with open(r"models/sgd.pickle", "wb") as f:
     pickle.dump(sgd,f)
 
-with open(r"../data/svc.pickle", "wb") as f:
+with open(r"models/svc.pickle", "wb") as f:
     pickle.dump(svc,f)
 
 
+print('end')
+
 #%%
-print('ok')

@@ -17,19 +17,6 @@ class RockScissorPaper:
 		print(f"{self.name} is inizialised" )
 		return
 
-
-	def ChooseModel(self): 
-		if self.model == 0:
-			op('hand_ml/model_slector') == 0
-			#op('hand_ml/show_model').par.text == "Model = Decision Tree"
-
-		elif self.model == 1:
-			op('hand_ml/model_slector') == 1
-			#op('hand_ml/show_model').par.text == "Model = Knn"
-
-		pass
-
-
 	def ResetGame(self):
 		op('hand_ml/reset_score').click()
 		op('hand_ml/last_move').par.index = 0

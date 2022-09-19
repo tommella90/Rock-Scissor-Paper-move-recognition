@@ -16,8 +16,8 @@ mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 
-## FIND RELATIVE POSITIONS (distances)
-## relative position
+## FIND DISTANCES
+## Adding distances among some fingers as additional features
 def RelativePositions(hand_dictionary):
     ## wrist (palm)
     wrist_x, wrist_y, wrist_z = hand_dictionary['WRIST_x'], hand_dictionary['WRIST_y'], hand_dictionary['WRIST_z']
@@ -27,7 +27,6 @@ def RelativePositions(hand_dictionary):
     ring_x, ring_y, ring_z =  hand_dictionary['RING_FINGER_TIP_x'], hand_dictionary['RING_FINGER_TIP_y'], hand_dictionary['RING_FINGER_TIP_z']
     middle_x2, middle_y2, middle_z2 =  hand_dictionary['MIDDLE_FINGER_MCP_x'], hand_dictionary['MIDDLE_FINGER_MCP_y'], hand_dictionary['MIDDLE_FINGER_MCP_z']
     pinky_x2, pinky_y2, pinky_z2 =  hand_dictionary['PINKY_MCP_x'], hand_dictionary['PINKY_MCP_y'], hand_dictionary['PINKY_MCP_z']
-
 
     ## index - middle vs wrist
     x1 = (hand_dictionary['INDEX_FINGER_TIP_x'] + hand_dictionary['MIDDLE_FINGER_TIP_x']) / 2
@@ -120,11 +119,9 @@ def GetHandCoords(directory):
             img = cv2.flip(img, 1)
 
             results = hands.process(img)
-            #print(results.multi_handedness)
-            #results.multi_handedness
 
             image_hight, image_width, _ = img.shape
-            annotated_image = img.copy()
+            annotated_image = img.copy()  ## to use to draw landmarks on the image
 
             try:
                 for hand_landmarks in results.multi_hand_landmarks:
@@ -228,67 +225,28 @@ def GetHandCoords(directory):
 
         return df
 
-'''
-def CenterCoordinates(df):
-    x_list, y_list, z_list = [], [], []
-
-    for i in df.columns:
-        if "_x" in i:
-            x_list.append(i)
-        elif "_y" in i:
-            y_list.append(i)
-        elif "_z" in i:
-            z_list.append(i)
-
-    x_vals = df[x_list]
-    x_vals = x_vals - x_vals.iloc[0,0]
-    y_vals = df[y_list]
-    y_vals = y_vals - y_vals.iloc[0,0]
-    z_vals = df[z_list]
-    z_vals = z_vals - z_vals.iloc[0,0]
-    others = df[['indmid_wrist', 'ringpinky_wrist', 'thumb_wrist', 'middle_pinky',
-                 'thumb_pinky', 'thumb_middle', 'middle_ring', 'pinky_itslef', 'middle_itself']]
-
-    df_new = pd.merge(x_vals, y_vals, left_index=True, right_index=True)
-    df_new = pd.merge(df_new, z_vals, left_index=True, right_index=True)
-    df_new = pd.merge(df_new, others, left_index=True, right_index=True)
-
-    return df_new
-'''
-
-
 ## function
 def ApplyModel(df, model):
     move = model.predict(df)
     return
 
-
-## OPEN IMAGE
-DESIRED_HEIGHT = 480
-DESIRED_WIDTH = 480
-def resize(image):
-    h, w = image.shape[:2]
-    if h < w:
-        cv2.resize(image, (DESIRED_WIDTH, math.floor(h/(w/DESIRED_WIDTH))))
-    else:
-        cv2.resize(image, (math.floor(w/(h/DESIRED_HEIGHT)), DESIRED_HEIGHT))
-
 #img = cv2.flip(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), 1)
 #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-## GETO CAMERA INPUT AND EXTRACT THE MOVE
+## GET CAMERA INPUT AND EXTRACT THE MOVE
 model = load("../model.pickle")
 print(model)
 
 
 #%%
 # RUN MEDIAPIPE HANDS AND CREATE THE DATAFRAMES
-mp_hands.Hands()
+#mp_hands.Hands()
 
+## path for images and dataframe
 from os import listdir
-s_path = 'C:/Users/tomma/Documents/data_science/berlin/final_project/data/hands/scissor/'
-r_path = 'C:/Users/tomma/Documents/data_science/berlin/final_project/data/hands/rock/'
-p_path = 'C:/Users/tomma/Documents/data_science/berlin/final_project/data/hands/paper/'
+s_path = 'data/scissor/'
+r_path = 'data/rock/'
+p_path = 'data/paper/'
 
 s = os.listdir(s_path)
 r = os.listdir(r_path)
@@ -312,34 +270,10 @@ for i in p:
     data = GetHandCoords(p_path + f"{i}/")
     paper = pd.concat([paper, data])
 
-scissor_center = CenterCoordinates(scissor)
-rock_center = CenterCoordinates(rock)
-paper_center = CenterCoordinates(paper)
-
-'''
-scissors1 = GetHandCoords(path + 'scissor_kaggle/')
-paper1 = GetHandCoords(path + 'rock_kaggle/')
-rock1 = GetHandCoords(path + 'paper_kaggle/')
-scissors2 = GetHandCoords(path + 'scissor_me/')
-paper2 = GetHandCoords(path + 'rock_me/')
-rock2 = GetHandCoords(path + 'paper_me/')
-scissors3 = GetHandCoords(path + 'scissor_others/')
-paper3 = GetHandCoords(path + 'rock_others/')
-rock3 = GetHandCoords(path + 'paper_others/')
-'''
-
-#df_2 = pd.concat([scissor, paper, rock])
-df_center = pd.concat([scissor_center, rock_center, paper_center])
-#df2 = pd.concat([df1, scissors2, paper2, rock2])
-#df3 = pd.concat([df2, scissors2, paper2, rock2])
-
-path = 'C:/Users/tomma/Documents/data_science/berlin/final_project/data/'
-#df_2.to_csv(path + 'hand_coords_level2.csv', index = False, encoding='utf-8') # False: not include index
-df_center.to_csv(path + 'hand_coords_center.csv', index = False, encoding='utf-8') # False: not include index
-
-#df2.to_csv(path + 'hand_coords2.csv', index = False, encoding='utf-8') # False: not include index
-#df3.to_csv(path + 'hand_coords_all.csv', index = False, encoding='utf-8') # False: not include index
-
+## concatenate and save the dataframe
+df = pd.concat([scissor, rock, paper])
+df.to_csv('data/hand_coords_incomplete.csv', index = False, encoding='utf-8') # False: not include index
+print('done')
 
 #%% TRY OPEN FILES IN LOOP
 '''
@@ -492,321 +426,9 @@ for pic in pics:
 
 
 
-#%%
-path = 'C:/Users/tomma/Pictures/Camera Roll/'
-pic = 'WIN_20220719_16_25_04_Pro.jpg'
-
-with mp_hands.Hands(
-        static_image_mode=True,
-        max_num_hands=1,
-        min_detection_confidence=0.7,
-        min_tracking_confidence=0.7) as hands:
-
-    img = cv2.imread(path + pic, 1)
-    resize(img)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = cv2.flip(img, 1)
-
-    results = hands.process(img)
-    #print(results.multi_handedness)
-    #results.multi_handedness
-
-    image_hight, image_width, _ = img.shape
-    annotated_image = img.copy()
-
-    for hand_landmarks in results.multi_hand_landmarks:
-        hand_dictionary = {
-            'WRIST_x' : hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].x,
-            'WRIST_y' : hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].y,
-            'WRIST_z' : hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].z,
-
-            'THUMB_CMC_x' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_CMC].x,
-            'THUMB_CMC_y' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_CMC].y,
-            'THUMB_CMC_z' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_CMC].z,
-
-            'THUMB_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_MCP].x,
-            'THUMB_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_MCP].y,
-            'THUMB_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_MCP].z,
-
-            'THUMB_IP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_IP].x,
-            'THUMB_IP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_IP].y,
-            'THUMB_IP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_IP].z,
-
-            'THUMB_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].x,
-            'THUMB_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].y,
-            'THUMB_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].z,
-
-            'INDEX_FINGER_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP].x,
-            'INDEX_FINGER_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP].y,
-            'INDEX_FINGER_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP].z,
-
-            'INDEX_FINGER_PIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_PIP].x,
-            'INDEX_FINGER_PIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_PIP].y,
-            'INDEX_FINGER_PIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_PIP].z,
-
-            'INDEX_FINGER_DIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP].x,
-            'INDEX_FINGER_DIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP].y,
-            'INDEX_FINGER_DIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP].z,
-
-            'INDEX_FINGER_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x,
-            'INDEX_FINGER_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].y,
-            'INDEX_FINGER_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].z,
-
-            'MIDDLE_FINGER_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP].x,
-            'MIDDLE_FINGER_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP].y,
-            'MIDDLE_FINGER_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP].z,
-
-            'MIDDLE_FINGER_PIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_PIP].x,
-            'MIDDLE_FINGER_PIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_PIP].y,
-            'MIDDLE_FINGER_PIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_PIP].z,
-
-            'MIDDLE_FINGER_DIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_DIP].x,
-            'MIDDLE_FINGER_DIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_DIP].y,
-            'MIDDLE_FINGER_DIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_DIP].z,
-
-            'MIDDLE_FINGER_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].x,
-            'MIDDLE_FINGER_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].y,
-            'MIDDLE_FINGER_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].z,
-
-            'RING_FINGER_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP].x,
-            'RING_FINGER_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP].y,
-            'RING_FINGER_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP].z,
-
-            'RING_FINGER_PIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP].x,
-            'RING_FINGER_PIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP].y,
-            'RING_FINGER_PIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP].z,
-
-            'RING_FINGER_DIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_DIP].x,
-            'RING_FINGER_DIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_DIP].y,
-            'RING_FINGER_DIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_DIP].z,
-
-            'RING_FINGER_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_TIP].x,
-            'RING_FINGER_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_TIP].y,
-            'RING_FINGER_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_TIP].z,
-
-            'PINKY_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_MCP].x,
-            'PINKY_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_MCP].y,
-            'PINKY_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_MCP].z,
-
-            'PINKY_PIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_PIP].x,
-            'PINKY_PIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_PIP].y,
-            'PINKY_PIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_PIP].z,
-
-            'PINKY_DIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_DIP].x,
-            'PINKY_DIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_DIP].y,
-            'PINKY_DIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_DIP].z,
-
-            'PINKY_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP].x,
-            'PINKY_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP].y,
-            'PINKY_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP].z,
-
-            }
-
-RelativePositions(hand_dictionary)
-hand_dictionary
-
-#%%
-
-
-
-
-
-
-#%%
-# RUN MEDIAPIPE HANDS AND CREATE THE DATAFRAMES
-mp_hands.Hands()
-
-oschdir = 'C:/Users/tomma/Videos/VideoProc Converter/WIN_20220725_15_21_01_Pro/'
-from os import listdir
-folder = 'C:/Users/tomma/Videos/VideoProc Converter/WIN_20220725_15_21_01_Pro/'
-GetHandCoords(folder)
-
-
-
-
-
-
-#%%
-GetHandCoords("C:/Users/tomma/Documents/data_science/berlin/final_project/data/hands/rock/rock_angelo/")
-
-
-#%% FOR A SINGLE PICTURE
-
-file = "C:/Users/tomma/Documents/data_science/berlin/final_project/data/hands/rock/rock_nelson/005.png"
-
-def GetHandCoords(file):
-    i = 0
-    df = pd.DataFrame()
-
-    with mp_hands.Hands(
-            static_image_mode=True,
-            max_num_hands=1,
-            min_detection_confidence=0.7,
-            min_tracking_confidence=0.7) as hands:
-
-        img = cv2.imread(file, 1)
-        resize(img)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = cv2.flip(img, 1)
-
-        results = hands.process(img)
-        #print(results.multi_handedness)
-        #results.multi_handedness
-
-        image_hight, image_width, _ = img.shape
-        annotated_image = img.copy()
-
-        try:
-            for hand_landmarks in results.multi_hand_landmarks:
-                hand_dictionary = {
-                    'WRIST_x' : hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].x,
-                    'WRIST_y' : hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].y,
-                    'WRIST_z' : hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].z,
-
-                    'THUMB_CMC_x' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_CMC].x,
-                    'THUMB_CMC_y' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_CMC].y,
-                    'THUMB_CMC_z' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_CMC].z,
-
-                    'THUMB_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_MCP].x,
-                    'THUMB_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_MCP].y,
-                    'THUMB_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_MCP].z,
-
-                    'THUMB_IP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_IP].x,
-                    'THUMB_IP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_IP].y,
-                    'THUMB_IP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_IP].z,
-
-                    'THUMB_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].x,
-                    'THUMB_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].y,
-                    'THUMB_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].z,
-
-                    'INDEX_FINGER_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP].x,
-                    'INDEX_FINGER_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP].y,
-                    'INDEX_FINGER_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP].z,
-
-                    'INDEX_FINGER_PIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_PIP].x,
-                    'INDEX_FINGER_PIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_PIP].y,
-                    'INDEX_FINGER_PIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_PIP].z,
-
-                    'INDEX_FINGER_DIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP].x,
-                    'INDEX_FINGER_DIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP].y,
-                    'INDEX_FINGER_DIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP].z,
-
-                    'INDEX_FINGER_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x,
-                    'INDEX_FINGER_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].y,
-                    'INDEX_FINGER_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].z,
-
-                    'MIDDLE_FINGER_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP].x,
-                    'MIDDLE_FINGER_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP].y,
-                    'MIDDLE_FINGER_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP].z,
-
-                    'MIDDLE_FINGER_PIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_PIP].x,
-                    'MIDDLE_FINGER_PIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_PIP].y,
-                    'MIDDLE_FINGER_PIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_PIP].z,
-
-                    'MIDDLE_FINGER_DIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_DIP].x,
-                    'MIDDLE_FINGER_DIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_DIP].y,
-                    'MIDDLE_FINGER_DIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_DIP].z,
-
-                    'MIDDLE_FINGER_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].x,
-                    'MIDDLE_FINGER_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].y,
-                    'MIDDLE_FINGER_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP].z,
-
-                    'RING_FINGER_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP].x,
-                    'RING_FINGER_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP].y,
-                    'RING_FINGER_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP].z,
-
-                    'RING_FINGER_PIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP].x,
-                    'RING_FINGER_PIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP].y,
-                    'RING_FINGER_PIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP].z,
-
-                    'RING_FINGER_DIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_DIP].x,
-                    'RING_FINGER_DIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_DIP].y,
-                    'RING_FINGER_DIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_DIP].z,
-
-                    'RING_FINGER_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_TIP].x,
-                    'RING_FINGER_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_TIP].y,
-                    'RING_FINGER_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_TIP].z,
-
-                    'PINKY_MCP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_MCP].x,
-                    'PINKY_MCP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_MCP].y,
-                    'PINKY_MCP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_MCP].z,
-
-                    'PINKY_PIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_PIP].x,
-                    'PINKY_PIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_PIP].y,
-                    'PINKY_PIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_PIP].z,
-
-                    'PINKY_DIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_DIP].x,
-                    'PINKY_DIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_DIP].y,
-                    'PINKY_DIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_DIP].z,
-
-                    'PINKY_TIP_x' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP].x,
-                    'PINKY_TIP_y' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP].y,
-                    'PINKY_TIP_z' : hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP].z,
-
-                }
-
-            RelativePositions(hand_dictionary)
-            row = pd.DataFrame.from_dict(hand_dictionary, orient='index').T
-            df = pd.concat([df, row])
-
-        except Exception as inst:
-            print(inst.args)
-
-        return df
-
-pic = GetHandCoords(file)
-
-
-#%%
-x_list, y_list, z_list = [], [], []
-for i in pic.columns:
-    if "_x" in i:
-        x_list.append(i)
-    elif "_y" in i:
-        y_list.append(i)
-    elif "_z" in i:
-        z_list.append(i)
-
-x_vals = pic[x_list]
-x_vals = x_vals - x_vals.iloc[0,0]
-y_vals = pic[y_list]
-y_vals = y_vals - y_vals.iloc[0,0]
-z_vals = pic[z_list]
-z_vals = z_vals - z_vals.iloc[0,0]
-others = pic[['indmid_wrist', 'ringpinky_wrist', 'thumb_wrist', 'middle_pinky',
-              'thumb_pinky', 'thumb_middle', 'middle_ring', 'pinky_itslef', 'middle_itself']]
-print(list(others))
-
-df = pd.merge(x_vals, y_vals, left_index=True, right_index=True)
-df = pd.merge(df, z_vals, left_index=True, right_index=True)
-df = pd.merge(df, others, left_index=True, right_index=True)
-
-print(len(df.columns))
-#%%
-
-df = CenterCoordinates(pic)
-
-len(df.columns)
-
-
-
-#%%
-from os import listdir
-try_path = 'C:/Users/tomma/Documents/data_science/berlin/final_project/data/hands/try/'
-
-t = os.listdir(try_path)
-try_all  = pd.DataFrame()
-for i in t:
-    print(f'{try_path}' + f'{i}/')
-    data = GetHandCoords(try_path + f"{i}/")
-    try_all = pd.concat([data, try_all])
-
-#scissor = CenterCoordinates(scissor)
-
-#%%
-
 
 #%% WEBCAM DETECTION
+## Use this script to see in real time your hand-landmarks
 import cv2
 import mediapipe as mp
 mp_face_mesh = mp.solutions.face_mesh
@@ -852,6 +474,7 @@ cap.release()
 
 
 #%% For static images: (1 hand)
+# Use this script to extract landmarks from a single pic
 import cv2
 import mediapipe as mp
 mp_face_mesh = mp.solutions.face_mesh
@@ -895,4 +518,4 @@ if results.multi_hand_landmarks:
 
 scissors1 = GetHandCoords("C:/Users/tomma/Documents/data_science/berlin/final_project/data/hands/try/t2/")
 np.array(scissors1.iloc[1,:])
-#%%
+
