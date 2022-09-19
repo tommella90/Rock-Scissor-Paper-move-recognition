@@ -1,6 +1,8 @@
 # ROCK SCISSOR PAPER MOVE RECOGNITION
 
 ## DESCRIPTION
+<img align="right" width="600" height="400" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
+
 In this project, I use classification ML to detect Rock Scissor or Paper through the camera. The figure represents the workflow: 
 
 1) I collected images of people distinguishing Rock, Scissor and Paper. 
@@ -9,7 +11,6 @@ In this project, I use classification ML to detect Rock Scissor or Paper through
 4) I apply the model to new data (video-camera) and detect in real time the current hand-move. 
 Finally, With Touchdesigner, you can play Rock Scissor Paper against the CPU (random move). 
 
-<img align="right" width="600" height="400" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
 
 
 ## EXTRACT HAND LANDMARKS WITH MEDIAPIPE
