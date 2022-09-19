@@ -1,7 +1,7 @@
 # ROCK SCISSOR PAPER MOVE RECOGNITION
 
 ## DESCRIPTION
-<img align="right" width="600" height="400" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
+<img align="right" width="600" height="350" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
 
 In this project, I use classification ML to detect Rock Scissor or Paper through the camera. The figure represents the workflow: 
 
