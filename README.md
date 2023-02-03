@@ -1,6 +1,8 @@
  # ROCK SCISSOR PAPER MOVE RECOGNITION
 
 ## DESCRIPTION
+<img align="right" width="600" height="350" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
+
 In this project, I use classification ML to detect Rock Scissor or Paper through the camera. The figure represents the workflow: 
 
 1) I collected images of people distinguishing Rock, Scissor and Paper. 
@@ -9,7 +11,6 @@ In this project, I use classification ML to detect Rock Scissor or Paper through
 4) I apply the model to new data (video-camera) and detect in real time the current hand-move. 
 Finally, With Touchdesigner, you can play Rock Scissor Paper against the CPU (random move). 
 
-<img align="right" width="600" height="400" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
 
 
 ## EXTRACT HAND LANDMARKS WITH MEDIAPIPE
@@ -35,11 +36,12 @@ I saved the models in pickle and uploaded them in Touchdesigner. The extension s
 
 If game mode is OFF, you can simply input a move on the camera and see the result. 
 
-https://user-images.githubusercontent.com/66441052/191137560-e13702c2-61ef-47c1-8acb-315b29ae6df2.mp4
+https://user-images.githubusercontent.com/66441052/216642513-c82ba289-7721-4d4c-ada8-5e7b69df2de1.mp4
 
 
 ## PLAY ROCK SCISSOR PAPER AGAINST THE CPU
 If you switch game mode ON, you will see the score and you will be able to input your move. The CPU move is 100% random. Note that, since the move detection cannot be 100% accurate, to input your move you need to hold it for a couple of seconds (watch the colored bars on the top-left). Here is the script that manages the Game on Touchdesigner: [link](https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/game_script.py)
 
-https://user-images.githubusercontent.com/66441052/191137589-6291f617-7a51-41ed-8de2-379df4deaf24.mp4
+https://user-images.githubusercontent.com/66441052/216642651-c1c33c2d-7a53-4d5e-81bd-807829d02a22.mp4
+
 
