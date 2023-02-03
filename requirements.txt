@@ -1,6 +1,4 @@
 https://download.derivative.ca/TouchDesigner.2022.31030.exe
-conda create -n td_py python=3.9
-conda activate td_py
 pandas
 scikit-learn
 mediapipe
