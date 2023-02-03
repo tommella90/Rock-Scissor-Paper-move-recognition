@@ -1,19 +1,22 @@
- # ROCK SCISSOR PAPER MOVE RECOGNITION
-
-## DESCRIPTION
-<img align="right" width="600" height="350" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
-
-In this project, I use classification ML to detect Rock Scissor or Paper through the camera. The figure represents the workflow: 
+ # ROCK SCISSOR PAPER MOVE RECOGNITION IN TOUCHDESIGNER
+https://user-images.githubusercontent.com/66441052/216642513-c82ba289-7721-4d4c-ada8-5e7b69df2de1.mp4
 
 If you want to try it: 
-- create a conda env called td_py: 
+- clone the repo 
+```
+git clone https://github.com/tommella90/Rock-Scissor-Paper-move-recognition.git
+```
+- create a conda env called td_py (necessary for touchdesigner): 
 ```
 conda create -n td_py python=3.9
 ```
-and run the requirements:
+- and run the requirements:
 ```
 pip install requirements.txt
 ```
+
+## DESCRIPTION
+In this project, I use classification ML to detect Rock Scissor or Paper through the camera. The figure represents the workflow: 
 
 1) I collected images of people distinguishing Rock, Scissor and Paper. 
 2) I transformed the images in landmarsk (coordinates) with Mediapipe. 
@@ -21,6 +24,7 @@ pip install requirements.txt
 4) I apply the model to new data (video-camera) and detect in real time the current hand-move. 
 Finally, With Touchdesigner, you can play Rock Scissor Paper against the CPU (random move). 
 
+<img align="center" width="700" height="400" src="https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/img/workflow.png">
 
 
 ## EXTRACT HAND LANDMARKS WITH MEDIAPIPE
@@ -45,9 +49,7 @@ I saved the models in pickle and uploaded them in Touchdesigner. The extension s
 - Reset Game: reset game score 
 
 If game mode is OFF, you can simply input a move on the camera and see the result. 
-
-https://user-images.githubusercontent.com/66441052/216642513-c82ba289-7721-4d4c-ada8-5e7b69df2de1.mp4
-
+(see video at the top)
 
 ## PLAY ROCK SCISSOR PAPER AGAINST THE CPU
 If you switch game mode ON, you will see the score and you will be able to input your move. The CPU move is 100% random. Note that, since the move detection cannot be 100% accurate, to input your move you need to hold it for a couple of seconds (watch the colored bars on the top-left). Here is the script that manages the Game on Touchdesigner: [link](https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/game_script.py)
