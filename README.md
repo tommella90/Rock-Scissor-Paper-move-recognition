@@ -36,11 +36,12 @@ I saved the models in pickle and uploaded them in Touchdesigner. The extension s
 
 If game mode is OFF, you can simply input a move on the camera and see the result. 
 
-https://user-images.githubusercontent.com/66441052/191137560-e13702c2-61ef-47c1-8acb-315b29ae6df2.mp4
+https://user-images.githubusercontent.com/66441052/216642513-c82ba289-7721-4d4c-ada8-5e7b69df2de1.mp4
 
 
 ## PLAY ROCK SCISSOR PAPER AGAINST THE CPU
 If you switch game mode ON, you will see the score and you will be able to input your move. The CPU move is 100% random. Note that, since the move detection cannot be 100% accurate, to input your move you need to hold it for a couple of seconds (watch the colored bars on the top-left). Here is the script that manages the Game on Touchdesigner: [link](https://github.com/tommella90/Rock-Scissor-Paper-move-recognition/blob/main/game_script.py)
 
-https://user-images.githubusercontent.com/66441052/191137589-6291f617-7a51-41ed-8de2-379df4deaf24.mp4
+https://user-images.githubusercontent.com/66441052/216642651-c1c33c2d-7a53-4d5e-81bd-807829d02a22.mp4
+
 
