@@ -1,4 +1,5 @@
- # ROCK SCISSOR PAPER MOVE RECOGNITION IN TOUCHDESIGNER
+ # ROCK SCISSOR PAPER MOVE RECOGNITION 
+ ### thanks to TOUCHDESIGNER and MEDIAPIPE
 https://user-images.githubusercontent.com/66441052/216642513-c82ba289-7721-4d4c-ada8-5e7b69df2de1.mp4
 
 If you want to try it: 
