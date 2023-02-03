@@ -14,6 +14,9 @@ from sklearn.metrics import plot_confusion_matrix
 import dataframe_image as dfi
 from sklearn.linear_model import SGDClassifier
 from sklearn import svm
+import tensorflow as tf
+from tensorflow import keras
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import GridSearchCV
@@ -27,7 +30,8 @@ def Standardization(Series):
 
 def LowerColumns(dataframe):
     for i in dataframe.columns:
-        dataframe.rename(columns = {f"{i}": f"{i.lower()}"}, inplace=True)
+        df = dataframe.rename(columns = {f"{i}": f"{i.lower()}"})
+        return df
 
 def DropFeatures(df):
     df = df.drop(columns=['score', 'hand'])
@@ -37,6 +41,7 @@ def ColReplace(col):
     df.loc[df[col].str.contains('scissor'), 'move'] = 'scissor'
     df.loc[df[col].str.contains('paper'), 'move'] = 'paper'
     df.loc[df[col].str.contains('rock'), 'move'] = 'rock'
+    return df
 
 def CleanDataframe(df):
     df['move'] = df['move'].replace({"scissor": 0, "paper": 1, "rock": 2})
@@ -70,16 +75,15 @@ def evaluate_classification_model(y_train, y_pred_train, y_test, y_pred_test):
 
 
 #%% PREPARE DATAFRAME
-df = pd.read_csv("data/hands_coords.csv")
-#fig_path = 'C:/Users/tomma/Documents/data_science/berlin/final_project/presentation/'
 
-# clean dataframe with previously defined functions
-ColReplace('move')
-LowerColumns(df)
+
+df = pd.read_csv("data/hands_coords.csv")
+
+df = ColReplace('move')
+df = LowerColumns(df)
 df = CleanDataframe(df)
 df = DropFeatures(df)
 df = df.dropna()
-
 
 ## to train the model, I only use the distances between the finger landmarks, and drop the signle coordinates
 df2 = df.iloc[:, -10:len(df.columns)]
@@ -192,7 +196,7 @@ pd.DataFrame(grid_search.cv_results_)
 
 print('ok')
 '''
-#%%
+
 #rfc = RandomForestClassifier()
 rfc = RandomForestClassifier(max_depth=10,
                              #min_samples_leaf=20,
@@ -230,6 +234,7 @@ print("RANDOM FOREST/n", rfc_importance.head(10))
 #error_metrics_knn = error_metrics_rfc.style.background_gradient() #adding a gradient based on values in cell
 dfi.export(error_metrics_rfc, "img/rfc_table.png")
 print('ok')
+
 
 
 #%% plot trees

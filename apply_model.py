@@ -8,6 +8,8 @@ import mediapipe as mp
 import pandas as pd
 import pickle
 import os
+import warnings
+warnings.filterwarnings("ignore")
 
 
 
@@ -68,6 +70,7 @@ def RelativePositions(hand_dictionary):
     hand_dictionary['middle_pinky'], hand_dictionary['thumb_pinky'], hand_dictionary['thumb_middle'] = dist_sq4, dist_sq5, dist_sq6
     hand_dictionary['middle_ring'], hand_dictionary['pinky_itslef'], hand_dictionary['middle_itself'] = dist_sq7, dist_sq8, dist_sq9
 
+    return hand_dictionary
 
 ## standardization 
 def Standardization(Series):
@@ -77,11 +80,11 @@ def Standardization(Series):
     return Series
 
 ## lower columns
-def LowerColumns(dataframe):
-    for i in dataframe.columns:
-        dataframe.rename(columns = {f"{i}": f"{i.lower()}"}, inplace=True)
+def LowerColumns(df):
+    for i in df.columns:
+        df = df.rename(columns = {f"{i}": f"{i.lower()}"})
+    return df
 
-## drop the class
 def DropFeatures(df):
     df = df.drop(columns=['hand'])
     return df
@@ -153,21 +156,23 @@ hand_mesh = mp_hands.Hands(
 
 
 def onCook(scriptOp):
+	"""Define what happens every frame"""
 
-	## transform the image into data
+	# transform the image into data
 	img = scriptOp.inputs[0].numpyArray(delayed=True)
 	frame = img*255
 	frame = frame.astype(np.uint8) #it's the casting of float32 to uint8
 	frame = cv2.cvtColor(frame,cv2.COLOR_RGBA2RGB)
 	results = hand_mesh.process(frame) 
 
-	## USE MEDIAPPIPE TO GET THE HAND LANDMARKS (per each frame)
+	# USE MEDIAPPIPE TO GET THE HAND LANDMARKS (per each frame)
 	try:
 		for hand_landmarks in results.multi_hand_landmarks:
+
 			hand_dictionary = {
 				'WRIST_x' : hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].x,
 				'WRIST_y' : hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].y,
-				'WRIST_z' : hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].z,
+				'WRIST_z' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_CMC].z,
 
 				'THUMB_CMC_x' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_CMC].x,
 				'THUMB_CMC_y' : hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_CMC].y,
@@ -251,28 +256,51 @@ def onCook(scriptOp):
 
 				'hand': results.multi_handedness[0].classification[0].label,
 			}
+			op('avg_position').par.value0 = hand_dictionary["MIDDLE_FINGER_TIP_x"] +.1
+			op('avg_position').par.value1 = hand_dictionary["MIDDLE_FINGER_TIP_y"] 
 
-			## extract distances between fingers
-			RelativePositions(hand_dictionary)
+
+			# extract distances between fingers
+			hand_dictionary = RelativePositions(hand_dictionary)
 			
 			## clean the dataframe
 			df = pd.DataFrame.from_dict(hand_dictionary, orient='index').T
-			LowerColumns(df)
+			df = LowerColumns(df)
 			df = DropFeatures(df)
 
-			## store the dataframe in touchdesigner
+			# store the dataframe in touchdesigner
 			op('real_time').unstore('*')
 			op('real_time').store('df', df.iloc[0,:] )
 
-			## drop the landmarks and keep the distances
+			# drop the landmarks and keep the distances
 			df = df[['indmid_wrist', 'ringpinky_wrist', 'thumb_wrist','middle_pinky', 'thumb_pinky', 'thumb_middle', 'middle_ring','pinky_itslef', 'middle_itself']]
 
-			## APPLY THE MODEL TO THE CURRENT FRAME (predict the gesture)
+			# APPLY THE MODEL TO THE CURRENT FRAME (predict the gesture)
 			model_predict = model.predict((np.array(df.iloc[0,:])).reshape(1,-1))
-			MOVE = op('gesture')
+			probs = model.predict_proba((np.array(df.iloc[0,:])).reshape(1,-1))
+			
+			# show class probabilitie
+			op('probs')[1,1] = round(probs[0][2],2)
+			op('color_rock').par.value0 = round(probs[0][2],2)
 
+			op('probs')[1,2] = round(probs[0][0],2)
+			op('color_scissor').par.value0 = round(probs[0][0],2)
+
+			op('probs')[1,3] = round(probs[0][1],2) 
+			op('color_paper').par.value0 = round(probs[0][1],2)
+
+			list_probs = [
+			["rock", round(probs[0][2],2), 0], 
+			["scissor", round(probs[0][0],2), 1],
+			["paper", round(probs[0][1],2), 2]
+			]
+
+			df_probs = pd.DataFrame(list_probs, columns=['moves', 'probs', 'label'])
+			df_probs = df_probs.sort_values(by="probs", ascending=False)
+			op('most_likely_move').par.value0 = df_probs.iloc[0,2]
 
 			## START ROCK SCISSOR PAPER GAME
+			MOVE = op('gesture')
 			if op('wait')['v1'] < 0.1:
 
 				if model_predict == 0:
@@ -289,22 +317,6 @@ def onCook(scriptOp):
 
 
 	except Exception as inst:
-		#x, y = inst.args
 		show_move.par.text = "NO HAND DETECTED"
-		#print(inst.args) 
 
 		pass  
-			
-
-'''
-	## TRANSFORM THE VIDEO INPUT ON A READABLE FORMAT (rgb 255)
-	with mp_hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.7, min_tracking_confidence=0.7) as hands:
-		img = op('webcam').numpyArray(delayed=True)
-		img_RGB = cv2.cvtColor(img,cv2.COLOR_RGBA2RGB)
-		img_RGB = img_RGB*255
-		img_RGB = img_RGB.astype(np.uint8) #it's the casting of float32 to uint8
-		results = hands.process(img_RGB)
-
-		img_RGB = cv2.flip(img_RGB, 1)
-		scriptOp.copyNumpyArray(img_RGB)
-'''

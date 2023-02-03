@@ -1,4 +1,4 @@
-# ROCK SCISSOR PAPER MOVE RECOGNITION
+ # ROCK SCISSOR PAPER MOVE RECOGNITION
 
 ## DESCRIPTION
 In this project, I use classification ML to detect Rock Scissor or Paper through the camera. The figure represents the workflow: 
