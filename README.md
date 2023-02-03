@@ -5,6 +5,16 @@
 
 In this project, I use classification ML to detect Rock Scissor or Paper through the camera. The figure represents the workflow: 
 
+If you want to try it: 
+- create a conda env called td_py: 
+```
+conda create -n td_py python=3.9
+```
+and run the requirements:
+```
+pip install requirements.txt
+```
+
 1) I collected images of people distinguishing Rock, Scissor and Paper. 
 2) I transformed the images in landmarsk (coordinates) with Mediapipe. 
 3) I applied ML algorightms on the new data to train a model able to recognize the hand-move
